@@ -169,8 +169,19 @@ namespace pooriayousefi::mcp
             process.start("git", args, true);
             process.close_stdin();
             std::string output = process.read_all_stdout();
-            process.wait();
-            result.set_value(std::move(output));
+            const int exit_code = process.wait();
+
+            if (exit_code != 0)
+            {
+                result.set_error(Error{
+                    error_code::INTERNAL_ERROR,
+                    "git command failed (exit code " + std::to_string(exit_code) + "): " + output
+                });
+            }
+            else
+            {
+                result.set_value(std::move(output));
+            }
         }
         catch (const std::exception& failure)
         {
